@@ -1,3 +1,5 @@
+# pipelines/app-cd-pipeline.yml
+
 trigger:
 - main
 
@@ -5,7 +7,7 @@ resources:
 - repo: self
 
 variables:
-  dockerRegistryServiceConnection: 'acr-connection'   # ACR service connection name
+  dockerRegistryServiceConnection: 'acr-connection'
   imageRepository: 'myazureproject'
   containerRegistry: 'zureacrt14.azurecr.io'
   dockerfilePath: 'app/Dockerfile'
@@ -31,9 +33,11 @@ stages:
         tags: |
           $(tag)
 
-    # Publish manifests as an artifact (corrected path)
-    - publish: $(Build.SourcesDirectory)/manifests
-      artifact: manifests
+    - task: PublishPipelineArtifact@1
+      displayName: Publish manifests folder
+      inputs:
+        targetPath: '$(Build.SourcesDirectory)/manifests'
+        artifact: manifests
 
 - stage: Deploy
   displayName: Deploy to AKS
@@ -47,18 +51,19 @@ stages:
       runOnce:
         deploy:
           steps:
-          - task: KubernetesManifest@0
+          - task: DownloadPipelineArtifact@2
+            inputs:
+              artifactName: manifests
+              targetPath: '$(Pipeline.Workspace)/manifests'
+
+          - task: KubernetesManifest@1
             displayName: Create imagePullSecret
             inputs:
               action: createSecret
               secretName: $(imagePullSecret)
               dockerRegistryEndpoint: $(dockerRegistryServiceConnection)
 
-          # Download the manifests artifact first
-          - download: current
-            artifact: manifests
-
-          - task: KubernetesManifest@0
+          - task: KubernetesManifest@1
             displayName: Deploy to AKS
             inputs:
               action: deploy
