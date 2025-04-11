@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: aks-html
-          image: azureacrt14.azurecr.io/myazureproject:latest
+          image: azureacrt14.azurecr.io/myazureproject:$(Build.BuildId)
           ports:
             - containerPort: 80
           resources:
@@ -24,3 +24,5 @@ spec:
             limits:
               memory: "128Mi"
               cpu: "500m"
+      imagePullSecrets:
+        - name: azureacrt144967-auth
