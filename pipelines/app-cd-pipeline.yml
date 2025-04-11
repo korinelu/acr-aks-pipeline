@@ -31,6 +31,7 @@ stages:
         tags: |
           $(tag)
 
+    # Publish manifests as an artifact (corrected path)
     - publish: $(Build.SourcesDirectory)/manifests
       artifact: manifests
 
@@ -53,13 +54,17 @@ stages:
               secretName: $(imagePullSecret)
               dockerRegistryEndpoint: $(dockerRegistryServiceConnection)
 
+          # Download the manifests artifact first
+          - download: current
+            artifact: manifests
+
           - task: KubernetesManifest@0
             displayName: Deploy to AKS
             inputs:
               action: deploy
               manifests: |
-                $(Pipeline.Workspace)/_manifests/deployment.yml
-                $(Pipeline.Workspace)/_manifests/service.yml
+                $(Pipeline.Workspace)/manifests/deployment.yml
+                $(Pipeline.Workspace)/manifests/service.yml
               imagePullSecrets: |
                 $(imagePullSecret)
               containers: |
