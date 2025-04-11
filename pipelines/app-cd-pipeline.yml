@@ -56,15 +56,15 @@ stages:
 
           # Download the manifests artifact
           - download: current
-            artifact: k8s-manifests
+            artifact: manifests
 
           - task: KubernetesManifest@1
             displayName: Deploy to AKS
             inputs:
               action: deploy
               manifests: |
-                $(Pipeline.Workspace)/k8s-manifests/deployment.yml
-                $(Pipeline.Workspace)/k8s-manifests/service.yml
+                $(Pipeline.Workspace)/manifests/deployment.yml
+                $(Pipeline.Workspace)/manifests/service.yml
               imagePullSecrets: |
                 $(imagePullSecret)
               containers: |
