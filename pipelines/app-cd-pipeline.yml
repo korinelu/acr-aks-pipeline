@@ -1,5 +1,3 @@
-# pipelines/app-cd-pipeline.yml
-
 trigger:
 - main
 
@@ -7,7 +5,7 @@ resources:
 - repo: self
 
 variables:
-  dockerRegistryServiceConnection: 'acr-connection'   # Your ACR service connection name
+  dockerRegistryServiceConnection: 'acr-connection'   # ACR service connection name
   imageRepository: 'myazureproject'
   containerRegistry: 'zureacrt14.azurecr.io'
   dockerfilePath: 'app/Dockerfile'
@@ -33,7 +31,7 @@ stages:
         tags: |
           $(tag)
 
-    - publish: manifests
+    - publish: $(Build.SourcesDirectory)/manifests
       artifact: manifests
 
 - stage: Deploy
@@ -60,8 +58,8 @@ stages:
             inputs:
               action: deploy
               manifests: |
-                $(Pipeline.Workspace)/_acr-aks-pipeline/manifests/deployment.yaml
-                $(Pipeline.Workspace)/_acr-aks-pipeline/manifests/service.yaml
+                $(Pipeline.Workspace)/manifests/deployment.yml
+                $(Pipeline.Workspace)/manifests/service.yml
               imagePullSecrets: |
                 $(imagePullSecret)
               containers: |
