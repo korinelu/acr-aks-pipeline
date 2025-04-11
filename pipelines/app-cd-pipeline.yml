@@ -1,3 +1,40 @@
+trigger:
+- main
+
+resources:
+- repo: self
+
+variables:
+  dockerRegistryServiceConnection: 'acr-connection'   # ACR service connection name
+  imageRepository: 'myazureproject'
+  containerRegistry: 'zureacrt14.azurecr.io'
+  dockerfilePath: 'app/Dockerfile'
+  tag: '$(Build.BuildId)'
+  imagePullSecret: 'azureacrt144967-auth'
+  vmImageName: 'ubuntu-22.04'
+
+stages:
+- stage: Build
+  displayName: Build and Push Docker Image
+  jobs:
+  - job: Build
+    pool:
+      vmImage: $(vmImageName)
+    steps:
+    - task: Docker@2
+      displayName: Build and push image to ACR
+      inputs:
+        command: buildAndPush
+        containerRegistry: $(dockerRegistryServiceConnection)
+        repository: $(imageRepository)
+        dockerfile: $(dockerfilePath)
+        tags: |
+          $(tag)
+
+    # Publish manifests as an artifact (corrected path)
+    - publish: $(Build.SourcesDirectory)/manifests
+      artifact: manifests
+
 - stage: Deploy
   displayName: Deploy to AKS
   dependsOn: Build
@@ -10,17 +47,18 @@
       runOnce:
         deploy:
           steps:
-          - download: current
-            artifact: manifests
-
-          - task: KubernetesManifests@1
+          - task: KubernetesManifest@0
             displayName: Create imagePullSecret
             inputs:
               action: createSecret
               secretName: $(imagePullSecret)
               dockerRegistryEndpoint: $(dockerRegistryServiceConnection)
 
-          - task: KubernetesManifests@1
+          # Download the manifests artifact first
+          - download: current
+            artifact: manifests
+
+          - task: KubernetesManifest@0
             displayName: Deploy to AKS
             inputs:
               action: deploy
