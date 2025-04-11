@@ -1,5 +1,3 @@
-# pipelines/app-cd-pipeline.yml
-
 trigger:
 - main
 
@@ -7,9 +5,9 @@ resources:
 - repo: self
 
 variables:
-  dockerRegistryServiceConnection: 'acr-connection'
+  dockerRegistryServiceConnection: 'acr-connection'     # ACR service connection
   imageRepository: 'myazureproject'
-  containerRegistry: 'zureacrt14.azurecr.io'
+  containerRegistry: 'azureacrt14.azurecr.io'           # fixed typo: 'zureacrt14' -> 'azureacrt14'
   dockerfilePath: 'app/Dockerfile'
   tag: '$(Build.BuildId)'
   imagePullSecret: 'azureacrt144967-auth'
@@ -24,7 +22,7 @@ stages:
       vmImage: $(vmImageName)
     steps:
     - task: Docker@2
-      displayName: Build and push image to ACR
+      displayName: Build and Push Image to ACR
       inputs:
         command: buildAndPush
         containerRegistry: $(dockerRegistryServiceConnection)
@@ -33,8 +31,11 @@ stages:
         tags: |
           $(tag)
 
-    - publish: $(Build.SourcesDirectory)/manifests
-      artifact: manifests
+    - task: PublishPipelineArtifact@1
+      displayName: Publish Manifests
+      inputs:
+        targetPath: 'manifests'
+        artifact: 'manifests'
 
 - stage: Deploy
   displayName: Deploy to AKS
@@ -48,14 +49,20 @@ stages:
       runOnce:
         deploy:
           steps:
-          - task: KubernetesManifests@1
+          - task: DownloadPipelineArtifact@2
+            displayName: Download Manifests Artifact
+            inputs:
+              artifact: 'manifests'
+              path: '$(Pipeline.Workspace)/manifests'
+
+          - task: KubernetesManifest@1
             displayName: Create imagePullSecret
             inputs:
               action: createSecret
               secretName: $(imagePullSecret)
               dockerRegistryEndpoint: $(dockerRegistryServiceConnection)
 
-          - task: KubernetesManifests@1
+          - task: KubernetesManifest@1
             displayName: Deploy to AKS
             inputs:
               action: deploy
