@@ -60,8 +60,8 @@ stages:
             inputs:
               action: deploy
               manifests: |
-                $(Pipeline.Workspace)/_acr-aks-pipeline/manifests/deployment.yml
-                $(Pipeline.Workspace)/_acr-aks-pipeline/manifests/service.yml
+                $(Pipeline.Workspace)/_acr-aks-pipeline/manifests/deployment.yaml
+                $(Pipeline.Workspace)/_acr-aks-pipeline/manifests/service.yaml
               imagePullSecrets: |
                 $(imagePullSecret)
               containers: |
