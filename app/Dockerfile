@@ -1,5 +1,5 @@
 # Use a lightweight Nginx base image
-FROM nginx:1.25-alpinealpine
+FROM nginx:1.25-alpine
 
 # Copy the HTML file to the default Nginx public folder
 COPY index.html /usr/share/nginx/html/index.html
