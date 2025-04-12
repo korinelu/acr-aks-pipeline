@@ -9,7 +9,7 @@ resources:
 variables:
   dockerRegistryServiceConnection: 'acr-connection'
   imageRepository: 'myazureproject'
-  containerRegistry: 'zureacrt14.azurecr.io'
+  containerRegistry: 'azureacrt14.azurecr.io'
   dockerfilePath: 'app/Dockerfile'
   tag: '$(Build.BuildId)'
   imagePullSecret: 'azureacrt144967-auth'
@@ -70,7 +70,6 @@ stages:
               manifests: |
                 $(Pipeline.Workspace)/manifests/deployment.yml
                 $(Pipeline.Workspace)/manifests/service.yml
-              imagePullSecrets: |
-                $(imagePullSecret)
               containers: |
-                $(containerRegistry)/$(imageRepository):$(tag)
+                azureacrt14.azurecr.io/myazureproject:$(Build.BuildId)
+              imagePullSecrets: 'azureacrt144967-auth'
